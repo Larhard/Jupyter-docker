@@ -11,18 +11,14 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 575159689BEFB442 &&
 
 RUN apt-get update -qq
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+        aria2 \
         git \
-        python-pip \
-        python-dev \
-        python3-pip \
-        python3-dev \
-        libzmq3-dev \
-        stack \
         libncurses-dev \
         pkg-config \
-        smlnj \
-        m4 \
-        aria2
+        python-dev \
+        python-pip \
+        python3-dev \
+        python3-pip
 
 EXPOSE 8888
 
@@ -50,37 +46,63 @@ ADD jupyter_notebook_config.py /home/jupyter/.jupyter/
 RUN pip3 install --user --upgrade jupyter
 
 # SML
+USER root
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+        smlnj
+USER jupyter
+ 
 RUN git clone https://github.com/matsubara0507/simple-ismlnj.git ismlnj
 RUN mkdir -p "/home/jupyter/.local/share/jupyter/kernels/ismlnj"
 RUN sed -i 's:/root/sml:/home/jupyter/ismlnj:' "/home/jupyter/ismlnj/kernels/smlnj/kernel.json" && \
     jupyter kernelspec install --user /home/jupyter/ismlnj/kernels/smlnj
 
 # Haskell
+USER root
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+        libzmq3-dev \
+        stack
+USER jupyter
+ 
 RUN stack --install-ghc --resolver lts-5.0 install ihaskell
 RUN ~/.local/bin/ihaskell install
 
 # SageMath
+USER root
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+        m4 \
+        texlive-fonts-recommended \
+        texlive-latex-extra \
+        texlive-latex-recommended \
+        texlive-xetex
+USER jupyter
+
 RUN aria2c --seed-time=0 http://mirror.aarnet.edu.au/pub/sage/linux/64bit/meta/sage-8.2-Ubuntu_14.04-x86_64.tar.bz2.torrent && \
     tar xvjf sage*.tar.bz2 && \
     rm sage*.tar.bz2*
 
 RUN rm -rf SageMath/local/share/jupyter/kernels/sagemath/doc
 RUN sed -i 's:/home/buildbot/.*/local/bin/sage:/home/jupyter/SageMath/sage:g' /home/jupyter/SageMath/local/share/jupyter/kernels/sagemath/kernel.json && jupyter kernelspec install --user SageMath/local/share/jupyter/kernels/sagemath
+ENV SAGE_ROOT="/home/jupyter/SageMath"
+ENV JUPYTER_PATH="/home/jupyter/SageMath/local/share/jupyter${JUPYTER_PATH:+:$JUPYTER_PATH}"
+
+# RUN python SageMath/relocate-once.py
+# does not work correctly, don't know why
 
 # Python
 RUN pip3 install --user --upgrade six
 USER root
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+    graphviz \
+    python3-matplotlib \
     python3-numpy \
     python3-pandas \
-    python3-matplotlib \
     python3-scipy
 USER jupyter
 RUN pip3 install --user --upgrade \
-    scikit-learn \
-    scikit-image \
-    sympy \
     graphviz \
+    scikit-image \
+    scikit-learn \
+    sympy \
     tensorflow
 
 # C++
