@@ -48,7 +48,8 @@ RUN pip3 install --user --upgrade jupyter
 # SML
 USER root
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
-        smlnj
+        smlnj \
+        libsmlnj-smlnj
 USER jupyter
  
 RUN git clone https://github.com/matsubara0507/simple-ismlnj.git ismlnj
