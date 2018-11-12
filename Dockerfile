@@ -43,6 +43,12 @@ ENV PATH="/home/jupyter/.local/bin:${PATH}"
 # Jupyter
 RUN mkdir -p -m 700 ~/.jupyter/
 ADD jupyter_notebook_config.py /home/jupyter/.jupyter/
+USER root
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+        gcc \
+        g++ \
+        libzmq3-dev
+USER jupyter
 RUN pip3 install --user --upgrade jupyter
 
 # SML
@@ -60,7 +66,6 @@ RUN sed -i 's:/root/sml:/home/jupyter/ismlnj:' "/home/jupyter/ismlnj/kernels/sml
 # Haskell
 USER root
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
-        libzmq3-dev \
         stack
 USER jupyter
  
