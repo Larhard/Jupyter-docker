@@ -95,7 +95,7 @@ ENV JUPYTER_PATH="/home/jupyter/SageMath/local/share/jupyter${JUPYTER_PATH:+:$JU
 # does not work correctly, don't know why
 
 # C++
-RUN aria2c https://root.cern.ch/download/cling/cling_2018-06-04_ubuntu14.tar.bz2
+RUN aria2c https://root.cern.ch/download/cling/cling_2018-11-05_ubuntu14.tar.bz2
 RUN tar xvjf cling_*.tar.bz2 && \
     rm -f cling_*.tar.bz2 && \
     mv cling_* cling
