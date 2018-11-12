@@ -89,6 +89,18 @@ ENV JUPYTER_PATH="/home/jupyter/SageMath/local/share/jupyter${JUPYTER_PATH:+:$JU
 # RUN python SageMath/relocate-once.py
 # does not work correctly, don't know why
 
+# C++
+RUN aria2c https://root.cern.ch/download/cling/cling_2018-06-04_ubuntu14.tar.bz2
+RUN tar xvjf cling_*.tar.bz2 && \
+    rm -f cling_*.tar.bz2 && \
+    mv cling_* cling
+ENV PATH="/home/jupyter/cling/bin:${PATH}"
+RUN cd /home/jupyter/cling/share/cling/Jupyter/kernel && \
+    pip install --user -e . && \
+    jupyter kernelspec install --user cling-cpp11 && \
+    jupyter kernelspec install --user cling-cpp14 && \
+    jupyter kernelspec install --user cling-cpp17
+
 # Python
 RUN pip3 install --user --upgrade six
 USER root
@@ -101,21 +113,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
 USER jupyter
 RUN pip3 install --user --upgrade \
     graphviz \
+    seaborn \
     scikit-image \
     scikit-learn \
     sympy \
     tensorflow
-
-# C++
-RUN aria2c https://root.cern.ch/download/cling/cling_2018-06-04_ubuntu14.tar.bz2
-RUN tar xvjf cling_*.tar.bz2 && \
-    rm -f cling_*.tar.bz2 && \
-    mv cling_* cling
-ENV PATH="/home/jupyter/cling/bin:${PATH}"
-RUN cd /home/jupyter/cling/share/cling/Jupyter/kernel && \
-    pip install --user -e . && \
-    jupyter kernelspec install --user cling-cpp11 && \
-    jupyter kernelspec install --user cling-cpp14 && \
-    jupyter kernelspec install --user cling-cpp17
 
 CMD ["stack", "exec", "jupyter", "notebook"]
